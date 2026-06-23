@@ -1,0 +1,52 @@
+# Development environment for Frappe + ERPNext (v16)
+# Dựa trên devcontainer setup chính thức của frappe_docker, adapt cho meta-repo + submodules.
+#
+# Cách hoạt động:
+# - frappe container (image frappe/bench:latest) chứa bench CLI + Python/Node
+# - Toàn bộ repo được mount vào /workspace => apps/frappe, apps/erpnext (submodules) edit được live
+# - mariadb + redis chạy trong container riêng
+# - bench directory (frappe-bench/) được tạo trong /workspace (gitignored), apps symlink tới submodules
+
+services:
+  mariadb:
+    image: docker.io/mariadb:11.8
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MARIADB_AUTO_UPGRADE: 1
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  redis-cache:
+    image: docker.io/redis:alpine
+
+  redis-queue:
+    image: docker.io/redis:alpine
+
+  frappe:
+    image: docker.io/frappe/bench:latest
+    command: sleep infinity
+    environment:
+      - SHELL=/bin/bash
+    volumes:
+      # Mount toàn bộ repo vào /workspace (apps/ submodules sẽ edit được live)
+      - ..:/workspace:cached
+      # (tuỳ chọn) chia sẻ SSH credentials để get-app từ private repos
+      # - ${HOME}/.ssh:/home/frappe/.ssh:cached
+    working_dir: /workspace
+    ports:
+      - "8000-8005:8000-8005"
+      - "9000-9005:9000-9005"
+    depends_on:
+      - mariadb
+      - redis-cache
+      - redis-queue
+
+volumes:
+  mariadb-data:

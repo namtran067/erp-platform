@@ -1,3 +1,7 @@
+# Frappe bench directory (generated, not committed)
+frappe-bench/
+development/
+
 # Site data
 sites/
 sites/*/public/files
@@ -6,7 +10,9 @@ sites/*/private/files
 # Logs
 logs/
 *.log
-.kilo
+
+# Kilo (local AI tooling)
+.kilo/
 
 # Environment files (contains secrets)
 .env
