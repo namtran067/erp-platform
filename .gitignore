@@ -31,8 +31,12 @@ node_modules/
 # Docker
 *.pid
 
+# frappe_docker checkout used only to build the custom prod image
+prod/frappe_docker/
+
 # IDE
 .vscode/
 .idea/
+.kilo/
 *.swp
 *.swo

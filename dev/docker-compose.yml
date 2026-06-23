@@ -1,11 +1,13 @@
 # Development environment for Frappe + ERPNext (v16)
-# Dựa trên devcontainer setup chính thức của frappe_docker, adapt cho meta-repo + submodules.
+# Based on the official frappe_docker devcontainer setup, adapted for a meta-repo + submodules.
 #
-# Cách hoạt động:
-# - frappe container (image frappe/bench:latest) chứa bench CLI + Python/Node
-# - Toàn bộ repo được mount vào /workspace => apps/frappe, apps/erpnext (submodules) edit được live
-# - mariadb + redis chạy trong container riêng
-# - bench directory (frappe-bench/) được tạo trong /workspace (gitignored), apps symlink tới submodules
+# How it works:
+# - The frappe container (image frappe/bench:latest) ships the bench CLI + Python/Node.
+# - The whole repo is mounted at /workspace so apps/frappe and apps/erpnext (submodules)
+#   can be edited live from the host.
+# - mariadb + redis run in their own containers.
+# - The bench directory (frappe-bench/) is created inside /workspace (gitignored); its apps
+#   symlink back to the submodules so source edits take effect immediately.
 
 services:
   mariadb:
@@ -35,9 +37,9 @@ services:
     environment:
       - SHELL=/bin/bash
     volumes:
-      # Mount toàn bộ repo vào /workspace (apps/ submodules sẽ edit được live)
+      # Mount the whole repo at /workspace (apps/ submodules become editable live)
       - ..:/workspace:cached
-      # (tuỳ chọn) chia sẻ SSH credentials để get-app từ private repos
+      # (optional) share SSH credentials so bench get-app works with private repos
       # - ${HOME}/.ssh:/home/frappe/.ssh:cached
     working_dir: /workspace
     ports:
