@@ -1,0 +1,32 @@
+# Site data
+sites/
+sites/*/public/files
+sites/*/private/files
+
+# Logs
+logs/
+*.log
+.kilo
+
+# Environment files (contains secrets)
+.env
+dev/.env
+prod/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Node
+node_modules/
+
+# Docker
+*.pid
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
