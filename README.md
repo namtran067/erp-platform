@@ -36,6 +36,140 @@ erp-platform/
 
 ---
 
+## Setup on a new machine
+
+Run this once on any fresh workstation before running dev/prod. The submodules
+(`apps/frappe`, `apps/erpnext`) currently point at the forks
+`namtran067/frappe` and `namtran067/erpnext` (branch `version-16`). Pick the scenario
+below that matches your situation.
+
+### 0. Host prerequisites
+
+- **Git** ≥ 2.25, **GNU `make`**.
+- **Docker engine** running + standalone **`docker-compose`** (the `docker compose`
+  v2 plugin is broken on macOS Docker.app; the Makefile already uses the hyphenated
+  form).
+
+```bash
+git --version && docker-compose version && make --version
+```
+
+---
+
+### Scenario A — Default (clone this repo + forks, everything public)
+
+Use this if the forks are public and you want the standard layout.
+
+```bash
+git clone --recurse-submodules https://github.com/namtran067/erp-platform.git
+cd erp-platform
+
+# if you forgot --recurse-submodules:
+git submodule update --init --recursive
+```
+
+Verify:
+
+```bash
+git submodule status      # shows pinned SHA + (v16.x.x) tag
+ls apps/frappe apps/erpnext apps/custom_app    # should be non-empty
+```
+
+Continue at **[Dev quick start](#dev-quick-start)** or **[Production](#production)**.
+
+---
+
+### Scenario B — Use the official `frappe/frappe` + `frappe/erpnext` instead of forks
+
+Use this if you don't maintain forks (or a teammate wants the vanilla upstream).
+**You only do this on the new machine — do not commit `.git/config` changes.**
+
+```bash
+# 1. Clone the meta-repo WITHOUT submodules
+git clone https://github.com/namtran067/erp-platform.git
+cd erp-platform
+
+# 2. Point submodules at the official repos (local override only)
+git config submodule.apps/frappe.url  https://github.com/frappe/frappe.git
+git config submodule.apps/erpnext.url https://github.com/frappe/erpnext.git
+
+# 3. Fetch + checkout the pinned SHAs from upstream
+git submodule update --init --recursive
+```
+
+Notes:
+- The pinned SHA in this repo exists on the official `version-16` branch, so the
+  checkout succeeds.
+- If you later want this to be **permanent for everyone**, edit `.gitmodules` and
+  commit (but then `make update-upstream` and `prod/apps.json` should also switch to
+  `frappe/...` — see [Updating upstream](#updating-upstream-frappe--erpnext)).
+- **CI runners** can do the same override via a one-liner:
+  ```bash
+  git -c submodule.apps/frappe.url=https://github.com/frappe/frappe.git \
+      -c submodule.apps/erpnext.url=https://github.com/frappe/erpnext.git \
+      submodule update --init --recursive
+  ```
+
+---
+
+### Scenario C — You already have `frappe` and `erpnext` checked out locally
+
+Use this on a workstation where you already develop on frappe/erpnext and don't want a
+second copy downloaded. We clone the meta-repo, then **replace the submodule working
+trees with your existing checkouts** (kept in sync by a relative path).
+
+```bash
+# 1. Clone meta-repo WITHOUT touching submodules
+git clone --no-checkout https://github.com/namtran067/erp-platform.git
+cd erp-platform
+git checkout main
+
+# 2. Deinit the submodules so Git won't manage those paths
+git submodule deinit -f apps/frappe apps/erpnext
+git rm -rf --cached apps/frappe apps/erpnext   # untracks, keeps .gitmodules
+
+# 3. Symlink your existing checkouts into apps/
+#    (adjust paths to wherever your copies live)
+ln -s ~/code/frappe     apps/frappe
+ln -s ~/code/erpnext    apps/erpnext
+
+# 4. Check them out on version-16 so they match the pinned upstream
+(cd apps/frappe  && git fetch origin && git checkout version-16 && git pull)
+(cd apps/erpnext && git fetch origin && git checkout version-16 && git pull)
+```
+
+> **Do not commit** the `apps/frappe` / `apps/erpnext` symlinks — leave them as local
+> overrides. If you want this layout permanently, the cleaner approach is to rewrite the
+> submodule URLs to `file://` paths (per-machine, never committed):
+>
+> ```bash
+> git config submodule.apps/frappe.url  /Users/you/code/frappe
+> git config submodule.apps/erpnext.url /Users/you/code/erpnext
+> git submodule update --init --recursive
+> ```
+
+---
+
+### Common steps after any scenario
+
+**Prepare prod env** (dev needs none — its config is hard-coded in
+`dev/docker-compose.yml` + `dev/init.sh`):
+
+```bash
+cp prod/.env.example prod/.env
+$EDITOR prod/.env     # set SITE / DB_PASSWORD / ADMIN_PASSWORD before first deploy
+```
+
+Then continue:
+- Local dev → **[Dev quick start](#dev-quick-start)**.
+- Server deploy → **[Production](#production)**.
+
+> **Gotcha:** whenever a teammate bumps a submodule and you `git pull` the meta-repo,
+> re-run `git submodule update --init --recursive` so your working copy matches the new
+> pinned SHA. Stale submodules cause confusing "file not found" / migration errors.
+
+---
+
 ## Prerequisites
 
 - **Docker engine** running.
