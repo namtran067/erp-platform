@@ -2,9 +2,5 @@
   {
     "url": "https://github.com/namtran067/erpnext.git",
     "branch": "version-16"
-  },
-  {
-    "url": "https://github.com/namtran067/custom_app.git",
-    "branch": "main"
   }
 ]
