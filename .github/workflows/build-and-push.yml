@@ -13,7 +13,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: self-hosted # <--- Targets your local Mac or VPS runner
+    runs-on: ubuntu-latest # <--- Đổi sang máy chủ Cloud của GitHub (Chip Intel)
     
     # Grant permissions to the default GITHUB_TOKEN to push the image to GHCR (Packages)
     permissions:
