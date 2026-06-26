@@ -153,5 +153,8 @@ services:
 
 volumes:
   sites:
+    name: erpnext_sites_vol
   db-data:
+    name: erpnext_db_vol
   redis-queue-data:
+    name: erpnext_redis_vol
