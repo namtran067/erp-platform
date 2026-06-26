@@ -48,6 +48,7 @@ services:
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
         bench set-config -gp socketio_port $$SOCKETIO_PORT;
         bench set-config -g chromium_path /usr/bin/chromium-headless-shell;
+        bench --site all migrate;
     environment:
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-3306}
